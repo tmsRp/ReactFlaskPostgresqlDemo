@@ -1,0 +1,49 @@
+services:
+ db:
+  container_name: db
+  image: postgres:16.3-alpine
+  hostname: mydb
+  environment:
+   POSTGRES_USER: postgres
+   POSTGRES_PASSWORD: password
+   POSTGRES_DB: react-flask-sql-demo2
+  ports:
+   - 5434:5432
+  volumes:
+   - ./pgdata:/var/lib/postgresql/data
+  networks:
+    - mynet
+
+ backend:
+    container_name: backend
+    hostname: backend
+    build:
+      context: ./backend
+      dockerfile: dockerfile.backend
+    ports:
+      - 5000:5000
+    depends_on:
+      - db
+    networks:
+      - mynet
+
+ frontend:
+   container_name: frontend
+   build:
+     context: ./frontend
+     dockerfile: dockerfile.frontend
+   environment:
+     NODE_ENV: production
+   ports:
+     - 80:80
+   volumes:
+      - ./frontend/src:/app/src
+      #- ./frontend:/app
+   depends_on:
+      - backend
+   networks:
+      - mynet
+
+networks:
+  mynet:
+    driver: bridge
